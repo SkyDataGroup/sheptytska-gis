@@ -107,11 +107,23 @@ map.on('load', () => {
 
   try {
     const res = await fetch(AIRTABLE_PUBLIC_URL);
-    const data = await res.json();
+    const text = await res.text();
+const lines = text.split('\n');
+const headers = lines[0].split(',');
 
-    const record = data.find(
-      r => r.cadastre_id === cadastreId
-    );
+const records = lines.slice(1).map(line => {
+  const values = line.split(',');
+  const obj = {};
+  headers.forEach((h, i) => {
+    obj[h.trim()] = values[i]?.trim();
+  });
+  return obj;
+});
+
+const record = records.find(
+  r => r.cadastre_id === cadastreId
+);
+
 
     if (record) {
       html += `
