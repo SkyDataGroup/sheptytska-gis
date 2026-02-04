@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Інтерактивна карта Шептицької громади</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mapbox -->
+  <link
+    href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    rel="stylesheet"
+  />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+
+    .legend div {
+      margin-bottom: 6px;
+    }
+
+    .box {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="legend">
+  <strong>Шептицька громада</strong>
+  <div><span class="box" style="background:#2ecc71"></span>Комунальна / вільна</div>
+  <div><span class="box" style="background:#f1c40f"></span>В оренді</div>
+  <div><span class="box" style="background:#3498db"></span>Приватна</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
