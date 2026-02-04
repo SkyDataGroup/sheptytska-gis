@@ -98,11 +98,7 @@ map.on('load', () => {
 
   // 🖱️ Клік по ділянці
   map.on('click', 'parcels-fill', async (e) => {
-  const props = e.features[0].properties;
-  const cadastreId = props.cadastre_id;
-
-  const formula = encodeURIComponent(`{cadastre_id}='${cadastreId}'`);
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}?filterByFormula=${formula}`;
+  const cadastreId = e.features[0].properties.cadastre_id;
 
   let html = `
     <strong>Кадастровий номер:</strong><br>
@@ -110,30 +106,26 @@ map.on('load', () => {
   `;
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`
-      }
-    });
-
+    const res = await fetch(AIRTABLE_PUBLIC_URL);
     const data = await res.json();
 
-    if (data.records.length > 0) {
-      const r = data.records[0].fields;
+    const record = data.find(
+      r => r.cadastre_id === cadastreId
+    );
 
+    if (record) {
       html += `
-        <strong>Статус:</strong> ${r.status ?? '—'}<br>
-        <strong>Власність:</strong> ${r.ownership ?? '—'}<br>
-        <strong>Площа:</strong> ${r.area_ha ?? '—'} га<br>
-        <strong>Цільове:</strong> ${r.purpose ?? '—'}<br>
-        <strong>НГО:</strong> ${r.normative_value ?? '—'}<br>
-        <em>${r.comment ?? ''}</em>
+        <strong>Статус:</strong> ${record.status ?? '—'}<br>
+        <strong>Власність:</strong> ${record.ownership ?? '—'}<br>
+        <strong>Площа:</strong> ${record.area_ha ?? '—'} га<br>
+        <strong>Цільове:</strong> ${record.purpose ?? '—'}<br>
+        <strong>НГО:</strong> ${record.normative_value ?? '—'}
       `;
     } else {
       html += `<em>Дані в Airtable відсутні</em>`;
     }
   } catch (err) {
-    html += `<em>Помилка підключення до Airtable</em>`;
+    html += `<em>Помилка завантаження даних</em>`;
   }
 
   new mapboxgl.Popup()
@@ -141,6 +133,7 @@ map.on('load', () => {
     .setHTML(html)
     .addTo(map);
 });
+
 
 
   map.on('mouseenter', 'parcels-fill', () => {
