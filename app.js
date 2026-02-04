@@ -1,4 +1,9 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
+// ===== Airtable config =====
+const AIRTABLE_PUBLIC_URL = 'https://airtable.com/appUcws5zoGIey4Tv/shrJgSHOSOGdkWtYu/download';
+const AIRTABLE_BASE = 'appUcws5zoGley4Tv';
+const AIRTABLE_TABLE = 'Parcels';
+
 
 const map = new mapboxgl.Map({
   container: 'map',
@@ -92,18 +97,51 @@ map.on('load', () => {
   });
 
   // 🖱️ Клік по ділянці
-  map.on('click', 'parcels-fill', (e) => {
-    const p = e.features[0].properties;
+  map.on('click', 'parcels-fill', async (e) => {
+  const props = e.features[0].properties;
+  const cadastreId = props.cadastre_id;
 
-    new mapboxgl.Popup()
-      .setLngLat(e.lngLat)
-      .setHTML(`
-        <strong>Кадастровий номер:</strong><br>${p.cadastre_id}<br>
-        <strong>Площа:</strong> ${p.area}<br>
-        <strong>Статус:</strong> Вільна
-      `)
-      .addTo(map);
-  });
+  const formula = encodeURIComponent(`{cadastre_id}='${cadastreId}'`);
+  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}?filterByFormula=${formula}`;
+
+  let html = `
+    <strong>Кадастровий номер:</strong><br>
+    ${cadastreId}<br><br>
+  `;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (data.records.length > 0) {
+      const r = data.records[0].fields;
+
+      html += `
+        <strong>Статус:</strong> ${r.status ?? '—'}<br>
+        <strong>Власність:</strong> ${r.ownership ?? '—'}<br>
+        <strong>Площа:</strong> ${r.area_ha ?? '—'} га<br>
+        <strong>Цільове:</strong> ${r.purpose ?? '—'}<br>
+        <strong>НГО:</strong> ${r.normative_value ?? '—'}<br>
+        <em>${r.comment ?? ''}</em>
+      `;
+    } else {
+      html += `<em>Дані в Airtable відсутні</em>`;
+    }
+  } catch (err) {
+    html += `<em>Помилка підключення до Airtable</em>`;
+  }
+
+  new mapboxgl.Popup()
+    .setLngLat(e.lngLat)
+    .setHTML(html)
+    .addTo(map);
+});
+
 
   map.on('mouseenter', 'parcels-fill', () => {
     map.getCanvas().style.cursor = 'pointer';
