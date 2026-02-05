@@ -146,7 +146,12 @@ map.on('load', async () => {
   /* ===============================
      CLICK HANDLER
   ================================ */
-  map.on('click', 'parcels-fill', (e) => {
+  const normalize = v =>
+  String(v || '')
+    .trim()
+    .replace(/\s+/g, '');
+
+   map.on('click', 'parcels-fill', (e) => {
     const cadastreId = e.features[0].properties.cadastre_id;
 
     let html = `
@@ -155,8 +160,9 @@ map.on('load', async () => {
     `;
 
     const record = airtableRecords.find(
-      r => r.cadastre_id === cadastreId
-    );
+  r => normalize(r.cadastre_id) === normalize(cadastreId)
+);
+
 
     if (record) {
       html += `
