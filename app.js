@@ -148,8 +148,7 @@ map.on('load', async () => {
   ================================ */
   const normalize = v =>
   String(v || '')
-    .trim()
-    .replace(/\s+/g, '');
+    .replace(/[^0-9:]/g, '');
 
    map.on('click', 'parcels-fill', (e) => {
     const cadastreId = e.features[0].properties.cadastre_id;
