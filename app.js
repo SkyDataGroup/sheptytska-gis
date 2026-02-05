@@ -12,7 +12,7 @@ const AIRTABLE_TABLE = 'Parcels';
 const AIRTABLE_VIEW = 'Public API';
 
 // ⚠️ DEMO TOKEN — OK FOR DEMO ONLY
-const AIRTABLE_TOKEN = 'pat9YAXQ7LNOczvR0';
+const AIRTABLE_TOKEN = 'patNrPuB5o8iiNplH.acdaaa1b83dd5cda5b8eef49edce5f358599d0b0c8caf2af785811bf7c5df8dd';
 
 const AIRTABLE_API_URL =
   `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?view=${encodeURIComponent(AIRTABLE_VIEW)}`;
