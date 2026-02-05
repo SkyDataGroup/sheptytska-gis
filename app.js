@@ -4,193 +4,74 @@
 mapboxgl.accessToken =
   'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
-/* ===============================
-   AIRTABLE CONFIG (DEMO, WITH TOKEN)
-================================ */
-const AIRTABLE_BASE_ID = 'appUcws5zoGIey4Tv';
-const AIRTABLE_TABLE = 'Parcels';
-const AIRTABLE_VIEW = 'Public API';
-
-// ⚠️ DEMO TOKEN — OK FOR DEMO ONLY
-const AIRTABLE_TOKEN = 'patNrPuB5o8iiNplH.acdaaa1b83dd5cda5b8eef49edce5f358599d0b0c8caf2af785811bf7c5df8dd';
-
-const AIRTABLE_API_URL =
-  `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?view=${encodeURIComponent(AIRTABLE_VIEW)}`;
-
-/* ===============================
-   MAP INIT
-================================ */
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/satellite-streets-v12',
-  center: [24.22, 50.29], // Шептицька громада
-  zoom: 11
+  center: [24.23, 50.39], // Червоноград / Шептицький
+  zoom: 13
 });
 
-map.on('load', async () => {
+map.on('load', () => {
 
-  /* ===============================
-     COMMUNITY BORDER (DEMO)
-  ================================ */
-  map.addSource('community', {
+  // ===== LOAD BUILDINGS =====
+  map.addSource('buildings', {
     type: 'geojson',
-    data: {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [24.05, 50.20],
-          [24.40, 50.20],
-          [24.40, 50.40],
-          [24.05, 50.40],
-          [24.05, 50.20]
-        ]]
-      }
-    }
+    data: './data/buildings_demo.geojson'
   });
 
+  // ===== BUILDINGS FILL =====
   map.addLayer({
-    id: 'community-border',
-    type: 'line',
-    source: 'community',
-    paint: {
-      'line-color': '#ffffff',
-      'line-width': 2
-    }
-  });
-
-  /* ===============================
-     PARCELS (DEMO GEOMETRY)
-  ================================ */
-  map.addSource('parcels', {
-    type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          properties: {
-            cadastre_id: '4624887200:01:001:0001',
-            status: 'free'
-          },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[
-              [24.18, 50.28],
-              [24.20, 50.28],
-              [24.20, 50.30],
-              [24.18, 50.30],
-              [24.18, 50.28]
-            ]]
-          }
-        }
-      ]
-    }
-  });
-
-  map.addLayer({
-    id: 'parcels-fill',
+    id: 'buildings-fill',
     type: 'fill',
-    source: 'parcels',
+    source: 'buildings',
     paint: {
       'fill-color': [
-        'match',
-        ['get', 'status'],
-        'free', '#2ecc71',
-        'leased', '#f1c40f',
-        '#3498db'
+        'case',
+        ['==', ['get', 'debt_is'], true], '#e74c3c', // 🔴 борг
+        '#3498db'                                  // 🔵 без боргу
       ],
-      'fill-opacity': 0.6
+      'fill-opacity': 0.7
     }
   });
 
+  // ===== OUTLINE =====
   map.addLayer({
-    id: 'parcels-outline',
+    id: 'buildings-outline',
     type: 'line',
-    source: 'parcels',
+    source: 'buildings',
     paint: {
       'line-color': '#ffffff',
-      'line-width': 1
+      'line-width': 0.5
     }
   });
 
-  /* ===============================
-     LOAD AIRTABLE DATA
-  ================================ */
-  let airtableRecords = [];
+  // ===== POPUP ON HOVER =====
+  const popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  });
 
-  try {
-    const res = await fetch(AIRTABLE_API_URL, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`
-      }
-    });
+  map.on('mousemove', 'buildings-fill', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
 
-    const data = await res.json();
+    const p = e.features[0].properties;
 
-    airtableRecords = data.records.map(r => ({
-      cadastre_id: r.fields.cadastre_id,
-      status: r.fields.status,
-      ownership: r.fields.ownership,
-      area_ha: r.fields.area_ha,
-      purpose: r.fields.purpose,
-      normative_value: r.fields.normative_value,
-      comment: r.fields.comment
-    }));
-
-    console.log('Airtable loaded:', airtableRecords);
-  } catch (err) {
-    console.error('Airtable error:', err);
-  }
-
-  /* ===============================
-     CLICK HANDLER
-  ================================ */
-  const normalize = v =>
-  String(v || '')
-    .replace(/[^0-9:]/g, '');
-
-   map.on('click', 'parcels-fill', (e) => {
-    const cadastreId = e.features[0].properties.cadastre_id;
-
-    let html = `
-      <strong>Кадастровий номер:</strong><br>
-      ${cadastreId}<br><br>
-    `;
-
-    const record = airtableRecords.find(
-  r => normalize(r.cadastre_id) === normalize(cadastreId)
-);
-
-
-    if (record) {
-      html += `
-        <strong>Статус:</strong> ${record.status ?? '—'}<br>
-        <strong>Власність:</strong> ${record.ownership ?? '—'}<br>
-        <strong>Площа:</strong> ${record.area_ha ?? '—'} га<br>
-        <strong>Цільове:</strong> ${record.purpose ?? '—'}<br>
-        <strong>НГО:</strong> ${record.normative_value ?? '—'}<br>
-        <em>${record.comment ?? ''}</em>
-      `;
-    } else {
-      html += `<em>Дані в Airtable відсутні</em>`;
-    }
-
-    new mapboxgl.Popup()
+    popup
       .setLngLat(e.lngLat)
-      .setHTML(html)
+      .setHTML(`
+        <strong>Будівля:</strong> ${p.building_id ?? '—'}<br>
+        <strong>Тип:</strong> ${p.building_type ?? '—'}<br>
+        <strong>Власність:</strong> ${p.ownership ?? '—'}<br>
+        <strong>Податок:</strong> ${p.tax_due ?? '—'} грн<br>
+        <strong>Борг:</strong> ${p.debt_is ? `<span style="color:red">${p.debt_amount} грн</span>` : 'немає'}
+      `)
       .addTo(map);
   });
 
-  /* ===============================
-     CURSOR UX
-  ================================ */
-  map.on('mouseenter', 'parcels-fill', () => {
-    map.getCanvas().style.cursor = 'pointer';
-  });
-
-  map.on('mouseleave', 'parcels-fill', () => {
+  map.on('mouseleave', 'buildings-fill', () => {
     map.getCanvas().style.cursor = '';
+    popup.remove();
   });
 
 });
+
