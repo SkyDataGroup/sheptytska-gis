@@ -1,20 +1,21 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
-// ===== Airtable config =====
-const AIRTABLE_PUBLIC_URL = 'https://airtable.com/appUcws5zoGIey4Tv/shrJgSHOSOGdkWtYu/download';
-const AIRTABLE_BASE = 'appUcws5zoGley4Tv';
-const AIRTABLE_TABLE = 'Parcels';
+mapboxgl.accessToken =
+  'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
+// ===== Airtable (PUBLIC CSV) =====
+const AIRTABLE_PUBLIC_URL =
+  'https://airtable.com/shrJgSHOSOGdkWtYu/download';
 
+// ===== MAP INIT =====
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/satellite-streets-v12',
-  center: [24.22, 50.29], // Шептицька громада (приблизно)
+  center: [24.22, 50.29], // Шептицька громада
   zoom: 11
 });
 
-map.on('load', () => {
+map.on('load', async () => {
 
-  // 🔹 ДЕМО межа громади
+  // ===== DEMO COMMUNITY BORDER =====
   map.addSource('community', {
     type: 'geojson',
     data: {
@@ -42,7 +43,7 @@ map.on('load', () => {
     }
   });
 
-  // 🔹 ДЕМО ділянки
+  // ===== DEMO PARCELS =====
   map.addSource('parcels', {
     type: 'geojson',
     data: {
@@ -52,8 +53,7 @@ map.on('load', () => {
           type: 'Feature',
           properties: {
             cadastre_id: '4624887200:01:001:0001',
-            status: 'free',
-            area: '1.2 га'
+            status: 'free'
           },
           geometry: {
             type: 'Polygon',
@@ -96,34 +96,50 @@ map.on('load', () => {
     }
   });
 
-  // 🖱️ Клік по ділянці
-  map.on('click', 'parcels-fill', async (e) => {
-  const cadastreId = e.features[0].properties.cadastre_id;
-
-  let html = `
-    <strong>Кадастровий номер:</strong><br>
-    ${cadastreId}<br><br>
-  `;
+  // ===== LOAD AIRTABLE CSV ONCE (CACHE) =====
+  let airtableRecords = [];
 
   try {
     const res = await fetch(AIRTABLE_PUBLIC_URL);
     const text = await res.text();
-const lines = text.split('\n');
-const headers = lines[0].split(',');
 
-const records = lines.slice(1).map(line => {
-  const values = line.split(',');
-  const obj = {};
-  headers.forEach((h, i) => {
-    obj[h.trim()] = values[i]?.trim();
-  });
-  return obj;
-});
+    const lines = text.replace(/\r/g, '').trim().split('\n');
 
-const record = records.find(
-  r => r.cadastre_id === cadastreId
-);
+    const headers = lines[0]
+      .split(',')
+      .map(h => h.replace(/"/g, '').trim());
 
+    airtableRecords = lines.slice(1)
+      .filter(line => line.trim().length)
+      .map(line => {
+        const values = line
+          .split(',')
+          .map(v => v.replace(/"/g, '').trim());
+
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = values[i];
+        });
+        return obj;
+      });
+
+    console.log('Airtable records loaded:', airtableRecords);
+  } catch (err) {
+    console.error('Airtable load error:', err);
+  }
+
+  // ===== CLICK HANDLER =====
+  map.on('click', 'parcels-fill', (e) => {
+    const cadastreId = e.features[0].properties.cadastre_id;
+
+    let html = `
+      <strong>Кадастровий номер:</strong><br>
+      ${cadastreId}<br><br>
+    `;
+
+    const record = airtableRecords.find(
+      r => r.cadastre_id === cadastreId
+    );
 
     if (record) {
       html += `
@@ -136,18 +152,14 @@ const record = records.find(
     } else {
       html += `<em>Дані в Airtable відсутні</em>`;
     }
-  } catch (err) {
-    html += `<em>Помилка завантаження даних</em>`;
-  }
 
-  new mapboxgl.Popup()
-    .setLngLat(e.lngLat)
-    .setHTML(html)
-    .addTo(map);
-});
+    new mapboxgl.Popup()
+      .setLngLat(e.lngLat)
+      .setHTML(html)
+      .addTo(map);
+  });
 
-
-
+  // ===== CURSOR =====
   map.on('mouseenter', 'parcels-fill', () => {
     map.getCanvas().style.cursor = 'pointer';
   });
