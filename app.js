@@ -1,11 +1,25 @@
+/* ===============================
+   MAPBOX CONFIG
+================================ */
 mapboxgl.accessToken =
   'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
-// ===== Airtable (PUBLIC CSV) =====
-const AIRTABLE_PUBLIC_URL =
-  'https://airtable.com/shrJgSHOSOGdkWtYu/download';
+/* ===============================
+   AIRTABLE CONFIG (DEMO, WITH TOKEN)
+================================ */
+const AIRTABLE_BASE_ID = 'appUcws5zoGIey4Tv';
+const AIRTABLE_TABLE = 'Parcels';
+const AIRTABLE_VIEW = 'Public API';
 
-// ===== MAP INIT =====
+// ⚠️ DEMO TOKEN — OK FOR DEMO ONLY
+const AIRTABLE_TOKEN = 'pat9YAXQ7LNOczvR0';
+
+const AIRTABLE_API_URL =
+  `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?view=${encodeURIComponent(AIRTABLE_VIEW)}`;
+
+/* ===============================
+   MAP INIT
+================================ */
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -15,7 +29,9 @@ const map = new mapboxgl.Map({
 
 map.on('load', async () => {
 
-  // ===== DEMO COMMUNITY BORDER =====
+  /* ===============================
+     COMMUNITY BORDER (DEMO)
+  ================================ */
   map.addSource('community', {
     type: 'geojson',
     data: {
@@ -43,7 +59,9 @@ map.on('load', async () => {
     }
   });
 
-  // ===== DEMO PARCELS =====
+  /* ===============================
+     PARCELS (DEMO GEOMETRY)
+  ================================ */
   map.addSource('parcels', {
     type: 'geojson',
     data: {
@@ -96,39 +114,38 @@ map.on('load', async () => {
     }
   });
 
-  // ===== LOAD AIRTABLE CSV ONCE (CACHE) =====
+  /* ===============================
+     LOAD AIRTABLE DATA
+  ================================ */
   let airtableRecords = [];
 
   try {
-    const res = await fetch(AIRTABLE_PUBLIC_URL);
-    const text = await res.text();
+    const res = await fetch(AIRTABLE_API_URL, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`
+      }
+    });
 
-    const lines = text.replace(/\r/g, '').trim().split('\n');
+    const data = await res.json();
 
-    const headers = lines[0]
-      .split(',')
-      .map(h => h.replace(/"/g, '').trim());
+    airtableRecords = data.records.map(r => ({
+      cadastre_id: r.fields.cadastre_id,
+      status: r.fields.status,
+      ownership: r.fields.ownership,
+      area_ha: r.fields.area_ha,
+      purpose: r.fields.purpose,
+      normative_value: r.fields.normative_value,
+      comment: r.fields.comment
+    }));
 
-    airtableRecords = lines.slice(1)
-      .filter(line => line.trim().length)
-      .map(line => {
-        const values = line
-          .split(',')
-          .map(v => v.replace(/"/g, '').trim());
-
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = values[i];
-        });
-        return obj;
-      });
-
-    console.log('Airtable records loaded:', airtableRecords);
+    console.log('Airtable loaded:', airtableRecords);
   } catch (err) {
-    console.error('Airtable load error:', err);
+    console.error('Airtable error:', err);
   }
 
-  // ===== CLICK HANDLER =====
+  /* ===============================
+     CLICK HANDLER
+  ================================ */
   map.on('click', 'parcels-fill', (e) => {
     const cadastreId = e.features[0].properties.cadastre_id;
 
@@ -147,7 +164,8 @@ map.on('load', async () => {
         <strong>Власність:</strong> ${record.ownership ?? '—'}<br>
         <strong>Площа:</strong> ${record.area_ha ?? '—'} га<br>
         <strong>Цільове:</strong> ${record.purpose ?? '—'}<br>
-        <strong>НГО:</strong> ${record.normative_value ?? '—'}
+        <strong>НГО:</strong> ${record.normative_value ?? '—'}<br>
+        <em>${record.comment ?? ''}</em>
       `;
     } else {
       html += `<em>Дані в Airtable відсутні</em>`;
@@ -159,7 +177,9 @@ map.on('load', async () => {
       .addTo(map);
   });
 
-  // ===== CURSOR =====
+  /* ===============================
+     CURSOR UX
+  ================================ */
   map.on('mouseenter', 'parcels-fill', () => {
     map.getCanvas().style.cursor = 'pointer';
   });
