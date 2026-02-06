@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sheptytska GIS</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mapbox -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- TOP SEARCH -->
+  <div class="topbar">
+    <input id="searchInput" placeholder="Пошук: bld_01234 / адреса" />
+  </div>
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80" />
+      <div>
+        <strong>Адміністратор</strong>
+        <small>Податки та майно</small>
+      </div>
+    </div>
+
+    <section>
+      <h4>Податки</h4>
+      <label><input id="filterDebt" type="checkbox" checked /> З боргом</label>
+      <label><input id="filterNoDebt" type="checkbox" checked /> Без боргу</label>
+
+      <select id="ownershipFilter">
+        <option value="all">Всі форми власності</option>
+        <option value="communal">Комунальна</option>
+        <option value="private">Приватна</option>
+      </select>
+    </section>
+
+    <section>
+      <h4>Аналітика</h4>
+      <div>Будівель: <span id="stat-total">—</span></div>
+      <div>Боржників: <span id="stat-debtors">—</span></div>
+      <div>Сума боргу: <span id="stat-sum">—</span></div>
+    </section>
+  </aside>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- RIGHT INFO -->
+  <aside class="info-panel" id="info-panel">
+    <p>Наведіть курсор на будівлю</p>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
