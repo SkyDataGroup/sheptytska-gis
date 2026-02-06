@@ -5,6 +5,10 @@ mapboxgl.accessToken =
   'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
 
+let buildingsData;
+let debtFilter = { withDebt: true, withoutDebt: true };
+let ownershipFilter = 'all';
+let debtMode = false;
 
 const map = new mapboxgl.Map({
   container: 'map',
@@ -15,11 +19,11 @@ const map = new mapboxgl.Map({
 
 map.on('load', async () => {
   const res = await fetch('data/buildings_demo2.geojson');
-  const buildings = await res.json();
+  buildingsData = await res.json();
 
   map.addSource('buildings', {
     type: 'geojson',
-    data: buildings
+    data: buildingsData
   });
 
   map.addLayer({
@@ -29,8 +33,8 @@ map.on('load', async () => {
     paint: {
       'fill-color': [
         'case',
-        ['==', ['get', 'debt_is'], 1], '#e74c3c', // з боргом
-        '#3498db'                               // без боргу
+        ['==', ['get', 'debt_is'], 1], '#e74c3c',
+        '#3498db'
       ],
       'fill-opacity': 0.65
     }
@@ -46,41 +50,92 @@ map.on('load', async () => {
     }
   });
 
-  // ===== INFO PANEL (RIGHT) =====
-  map.on('mousemove', 'buildings-fill', (e) => {
-    map.getCanvas().style.cursor = 'pointer';
+  updateAnalytics();
+});
 
-    const f = e.features[0].properties;
+/* ================= FILTERS ================= */
 
-    document.getElementById('info-content').innerHTML = `
-      <div><b>Будівля:</b> ${f.building_id}</div>
-      <div><b>Тип:</b> ${f.building_type || '—'}</div>
-      <div><b>Власність:</b> ${f.ownership}</div>
-      <div><b>Податок:</b> ${f.tax_amount} грн</div>
-      <div><b>Борг:</b> ${f.debt_is == 1 ? 'є' : 'немає'}</div>
-    `;
-  });
+function applyFilters() {
+  const filtered = {
+    type: 'FeatureCollection',
+    features: buildingsData.features.filter(f => {
+      const debtOk =
+        (f.properties.debt_is === 1 && debtFilter.withDebt) ||
+        (f.properties.debt_is === 0 && debtFilter.withoutDebt);
 
-  map.on('mouseleave', 'buildings-fill', () => {
-    map.getCanvas().style.cursor = '';
-    document.getElementById('info-content').innerHTML =
-      'Наведіть курсор на будівлю';
-  });
+      const ownerOk =
+        ownershipFilter === 'all' ||
+        f.properties.ownership === ownershipFilter;
 
-  // ===== POPUP =====
-  map.on('click', 'buildings-fill', (e) => {
-    const f = e.features[0].properties;
+      const debtModeOk =
+        !debtMode || f.properties.debt_is === 1;
 
-    new mapboxgl.Popup({ closeButton: true })
-      .setLngLat(e.lngLat)
-      .setHTML(`
-        <b>${f.building_id}</b><br>
-        Тип: ${f.building_type || '—'}<br>
-        Власність: ${f.ownership}<br>
-        Податок: ${f.tax_amount} грн<br>
-        Борг: ${f.debt_is == 1 ? 'є' : 'немає'}
-      `)
-      .addTo(map);
-  });
+      return debtOk && ownerOk && debtModeOk;
+    })
+  };
+
+  map.getSource('buildings').setData(filtered);
+  updateAnalytics(filtered.features);
+}
+
+/* ================= ANALYTICS ================= */
+
+function updateAnalytics(features = buildingsData.features) {
+  const total = features.length;
+  const debtors = features.filter(f => f.properties.debt_is === 1);
+  const debtSum = debtors.reduce(
+    (sum, f) => sum + Number(f.properties.debt_amount || 0),
+    0
+  );
+
+  document.getElementById('stat-total').innerText = total;
+  document.getElementById('stat-debtors').innerText = debtors.length;
+  document.getElementById('stat-sum').innerText =
+    debtSum.toLocaleString() + ' грн';
+}
+
+/* ================= UI HOOKS ================= */
+
+// чекбокси
+document.getElementById('withDebt').onchange = e => {
+  debtFilter.withDebt = e.target.checked;
+  applyFilters();
+};
+
+document.getElementById('withoutDebt').onchange = e => {
+  debtFilter.withoutDebt = e.target.checked;
+  applyFilters();
+};
+
+// форма власності
+document.getElementById('ownership').onchange = e => {
+  ownershipFilter = e.target.value;
+  applyFilters();
+};
+
+// режим боржників
+document.getElementById('debtMode').onclick = () => {
+  debtMode = !debtMode;
+  applyFilters();
+  alert('📝 Створено завдання: Перевірка боржників');
+};
+
+/* ================= MAP INTERACTION ================= */
+
+map.on('mousemove', 'buildings-fill', e => {
+  const f = e.features[0].properties;
+
+  document.getElementById('info-content').innerHTML = `
+    <div><b>Будівля:</b> ${f.building_id}</div>
+    <div><b>Тип:</b> ${f.building_type || '—'}</div>
+    <div><b>Власність:</b> ${f.ownership}</div>
+    <div><b>Податок:</b> ${f.tax_amount} грн</div>
+    <div><b>Борг:</b> ${f.debt_amount || 0} грн</div>
+  `;
+});
+
+map.on('mouseleave', 'buildings-fill', () => {
+  document.getElementById('info-content').innerHTML =
+    'Наведіть курсор на будівлю';
 });
 
