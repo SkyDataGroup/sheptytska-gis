@@ -1,61 +1,87 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sheptytska GIS — Адміністрування податків</title>
+  <meta charset="utf-8" />
+  <title>Sheptytska GIS — Admin</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css"/>
+  <!-- Mapbox -->
+  <link
+    href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    rel="stylesheet"
+  />
+
+  <!-- Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-<div id="app">
 
-  <!-- LEFT PANEL -->
-  <aside id="sidebar">
-    <h2>🏛 Адміністрування</h2>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="search">
+    <i class="fa fa-search"></i>
+    <input type="text" placeholder="Пошук: bld_01234 / адреса" />
+  </div>
+</header>
 
-    <section>
-      <h3>Податки</h3>
-      <label><input type="checkbox" id="filterDebt" checked> З боргом</label><br>
-      <label><input type="checkbox" id="filterNoDebt" checked> Без боргу</label>
-    </section>
+<!-- MAIN LAYOUT -->
+<div class="app">
 
-    <section>
-      <h3>Форма власності</h3>
-      <select id="ownershipFilter">
-        <option value="all">Всі</option>
-        <option value="communal">Комунальна</option>
-        <option value="private">Приватна</option>
-        <option value="state">Державна</option>
-      </select>
-    </section>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-    <section>
-      <h3>Аналітика</h3>
-      <div class="stat">🏢 Будівель: <span id="statTotal">–</span></div>
-      <div class="stat">💰 Боржників: <span id="statDebt">–</span></div>
-      <div class="stat">📉 Сума боргу: <span id="statSum">–</span> грн</div>
-    </section>
+    <div class="profile">
+      <img src="https://i.pravatar.cc/60" />
+      <div>
+        <strong>Адміністратор</strong>
+        <span>Податки та майно</span>
+      </div>
+    </div>
 
-    <section>
-      <h3>Пошук</h3>
-      <input id="searchInput" placeholder="bld_01023"/>
-    </section>
+    <nav class="menu">
+      <div class="menu-section">Адміністрування</div>
+
+      <a class="menu-item active"><i class="fa fa-chart-pie"></i> Dashboard</a>
+      <a class="menu-item"><i class="fa fa-building"></i> Будівлі</a>
+      <a class="menu-item"><i class="fa fa-wallet"></i> Податки</a>
+      <a class="menu-item"><i class="fa fa-bell"></i> Боржники</a>
+
+      <div class="menu-section">Аналітика</div>
+
+      <a class="menu-item"><i class="fa fa-chart-line"></i> Звіти</a>
+      <a class="menu-item"><i class="fa fa-layer-group"></i> Фільтри</a>
+
+      <div class="menu-section">Автоматизації</div>
+
+      <label class="toggle">
+        <input type="checkbox" checked />
+        <span>Нарахування щомісяця</span>
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" />
+        <span>Повідомлення боржникам</span>
+      </label>
+    </nav>
   </aside>
 
   <!-- MAP -->
-  <div id="main">
-    <div id="map"></div>
+  <main id="map"></main>
 
-    <!-- RIGHT INFO -->
-    <aside id="info-panel">
-      <h3>Інформація</h3>
-      <div id="info-content">Наведіть курсор на будівлю</div>
-    </aside>
-  </div>
+  <!-- INFO PANEL -->
+  <aside class="info-panel">
+    <h3>Інформація</h3>
+    <div id="info-content">
+      Наведіть курсор на будівлю
+    </div>
+  </aside>
 
 </div>
 
