@@ -7,19 +7,22 @@ mapboxgl.accessToken =
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/satellite-streets-v12',
-  center: [24.23, 50.39], // Червоноград / Шептицький
-  zoom: 13
+  center: [24.239, 50.388],
+  zoom: 14
 });
 
-map.on('load', () => {
+map.on('load', async () => {
 
-  // ===== LOAD BUILDINGS =====
+  // LOAD GEOJSON
+  const res = await fetch('buildings_demo.geojson');
+  const geojson = await res.json();
+
   map.addSource('buildings', {
     type: 'geojson',
-    data: './data/buildings_demo1.geojson'
+    data: geojson
   });
 
-  // ===== BUILDINGS FILL =====
+  // BUILDINGS LAYER
   map.addLayer({
     id: 'buildings-fill',
     type: 'fill',
@@ -27,14 +30,13 @@ map.on('load', () => {
     paint: {
       'fill-color': [
         'case',
-        ['==', ['get', 'debt_is'], true], '#e74c3c', // 🔴 борг
-        '#3498db'                                  // 🔵 без боргу
+        ['==', ['get', 'debt_is'], true], '#dc2626',
+        '#2563eb'
       ],
-      'fill-opacity': 0.7
+      'fill-opacity': 0.6
     }
   });
 
-  // ===== OUTLINE =====
   map.addLayer({
     id: 'buildings-outline',
     type: 'line',
@@ -45,33 +47,25 @@ map.on('load', () => {
     }
   });
 
-  // ===== POPUP ON HOVER =====
-  const popup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: false
-  });
-
+  // HOVER INFO
   map.on('mousemove', 'buildings-fill', (e) => {
     map.getCanvas().style.cursor = 'pointer';
 
     const p = e.features[0].properties;
 
-    popup
-      .setLngLat(e.lngLat)
-      .setHTML(`
-        <strong>Будівля:</strong> ${p.building_id ?? '—'}<br>
-        <strong>Тип:</strong> ${p.building_type ?? '—'}<br>
-        <strong>Власність:</strong> ${p.ownership ?? '—'}<br>
-        <strong>Податок:</strong> ${p.tax_due ?? '—'} грн<br>
-        <strong>Борг:</strong> ${p.debt_is ? `<span style="color:red">${p.debt_amount} грн</span>` : 'немає'}
-      `)
-      .addTo(map);
+    document.getElementById('info-content').innerHTML = `
+      <strong>Будівля:</strong> ${p.building_id}<br>
+      <strong>Тип:</strong> ${p.building_type || '—'}<br>
+      <strong>Власність:</strong> ${p.ownership}<br>
+      <strong>Податок:</strong> ${p.tax_due || 0} грн<br>
+      <strong>Борг:</strong> ${p.debt_is ? p.debt_amount + ' грн' : 'немає'}
+    `;
   });
 
   map.on('mouseleave', 'buildings-fill', () => {
     map.getCanvas().style.cursor = '';
-    popup.remove();
   });
 
 });
+
 
