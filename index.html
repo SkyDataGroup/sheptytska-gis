@@ -1,75 +1,89 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <title>Municipal Tax GIS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <title>Sheptytska GIS — Admin</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Mapbox -->
+  <link
+    href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    rel="stylesheet"
+  />
+
+  <!-- Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-<aside class="nav">
-  <div class="nav-dots"><span></span><span></span><span></span></div>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="search">
+    <i class="fa fa-search"></i>
+    <input type="text" placeholder="Пошук: bld_01234 / адреса" />
+  </div>
+</header>
 
-  <div class="profile">
-    <img src="https://i.pravatar.cc/64" />
-    <div>
-      <strong>Адміністратор</strong>
-      <small>Податки та майно</small>
+<!-- MAIN LAYOUT -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/60" />
+      <div>
+        <strong>Адміністратор</strong>
+        <span>Податки та майно</span>
+      </div>
     </div>
-  </div>
 
-  <nav>
-    <button class="nav-item active"><i class="ri-dashboard-line"></i> Аналіз</button>
-    <button class="nav-item"><i class="ri-bar-chart-line"></i> Статистика</button>
-    <button class="nav-item"><i class="ri-calculator-line"></i> Нарахування</button>
-    <button class="nav-item"><i class="ri-notification-3-line"></i> Сповіщення</button>
-  </nav>
+    <nav class="menu">
+      <div class="menu-section">Адміністрування</div>
 
-  <!-- FILTERS -->
-  <div class="filters">
-    <label><input type="checkbox" id="filterDebt" checked> З боргом</label>
-    <label><input type="checkbox" id="filterNoDebt" checked> Без боргу</label>
+      <a class="menu-item active"><i class="fa fa-chart-pie"></i> Dashboard</a>
+      <a class="menu-item"><i class="fa fa-building"></i> Будівлі</a>
+      <a class="menu-item"><i class="fa fa-wallet"></i> Податки</a>
+      <a class="menu-item"><i class="fa fa-bell"></i> Боржники</a>
 
-    <select id="ownershipFilter">
-      <option value="all">Вся власність</option>
-      <option value="communal">Комунальна</option>
-      <option value="private">Приватна</option>
-    </select>
-  </div>
+      <div class="menu-section">Аналітика</div>
 
-  <div class="nav-bottom">
-    <button class="primary-btn">
-      <i class="ri-add-line"></i> Нова дія
-    </button>
-  </div>
-</aside>
+      <a class="menu-item"><i class="fa fa-chart-line"></i> Звіти</a>
+      <a class="menu-item"><i class="fa fa-layer-group"></i> Фільтри</a>
 
-<div id="map"></div>
+      <div class="menu-section">Автоматизації</div>
 
-<aside class="details">
-  <div class="tabs">
-    <button class="tab active" data-tab="data">Дані</button>
-    <button class="tab" data-tab="stats">Історія</button>
-    <button class="tab" data-tab="notify">Сповіщення</button>
-  </div>
+      <label class="toggle">
+        <input type="checkbox" checked />
+        <span>Нарахування щомісяця</span>
+      </label>
 
-  <div class="tab-content active" id="tab-data"></div>
-  <div class="tab-content" id="tab-stats">
-    <p class="muted">Історія нарахувань (демо)</p>
-  </div>
-  <div class="tab-content" id="tab-notify">
-    <div class="action"><i class="ri-phone-line"></i> Зателефонувати</div>
-    <div class="action"><i class="ri-send-plane-line"></i> PUSH у Приват24</div>
-    <div class="action"><i class="ri-message-2-line"></i> Надіслати SMS</div>
-  </div>
-</aside>
+      <label class="toggle">
+        <input type="checkbox" />
+        <span>Повідомлення боржникам</span>
+      </label>
+    </nav>
+  </aside>
+
+  <!-- MAP -->
+  <main id="map"></main>
+
+  <!-- INFO PANEL -->
+  <aside class="info-panel">
+    <h3>Інформація</h3>
+    <div id="info-content">
+      Наведіть курсор на будівлю
+    </div>
+  </aside>
+
+</div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <script src="app.js"></script>
