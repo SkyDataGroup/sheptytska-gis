@@ -13,7 +13,7 @@ let currentDebt = 'all';
 
 map.on('load', async () => {
 
-  const res = await fetch('data/buildings_demo2.geojson');
+  const res = await fetch('./data/buildings_demo2.geojson');
   const geojson = await res.json();
 
   map.addSource('buildings', {
