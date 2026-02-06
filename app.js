@@ -5,22 +5,15 @@ mapboxgl.accessToken =
   'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
 
-
-/* ==============================
-   GLOBAL STATE
-================================ */
 let map;
 let geoData;
 
-let currentFilters = {
+const filters = {
   debt: true,
   noDebt: true,
   ownership: "all"
 };
 
-/* ==============================
-   MAP INIT
-================================ */
 map = new mapboxgl.Map({
   container: "map",
   style: "mapbox://styles/mapbox/satellite-streets-v12",
@@ -28,14 +21,7 @@ map = new mapboxgl.Map({
   zoom: 13
 });
 
-map.on("load", () => {
-  loadBuildings();
-});
-
-/* ==============================
-   LOAD GEOJSON
-================================ */
-async function loadBuildings() {
+map.on("load", async () => {
   const res = await fetch("./data/buildings_demo2.geojson");
   geoData = await res.json();
 
@@ -52,39 +38,85 @@ async function loadBuildings() {
       "fill-color": [
         "case",
         [">", ["get", "tax_amount"], 0],
-        "#ef4444",     // debt
-        "#3b82f6"      // no debt
+        "#ef4444",
+        "#3b82f6"
       ],
       "fill-opacity": 0.55
     }
   });
 
   map.addLayer({
-    id: "buildings-outline",
+    id: "outline",
     type: "line",
     source: "buildings",
     paint: {
-      "line-color": "rgba(255,255,255,0.35)",
-      "line-width": 0.6
+      "line-color": "rgba(255,255,255,0.3)",
+      "line-width": 0.5
     }
   });
 
   applyFilters();
-  updateStatsFiltered();
-  registerMapEvents();
+  updateStats();
+  bindMapEvents();
+});
+
+/* FILTER LOGIC */
+function applyFilters() {
+  const filter = ["all"];
+
+  if (filters.debt && !filters.noDebt) {
+    filter.push([">", ["get", "tax_amount"], 0]);
+  }
+  if (!filters.debt && filters.noDebt) {
+    filter.push(["==", ["get", "tax_amount"], 0]);
+  }
+  if (filters.ownership !== "all") {
+    filter.push(["==", ["get", "ownership"], filters.ownership]);
+  }
+
+  map.setFilter("buildings", filter);
+  updateStats();
 }
 
-/* ==============================
-   MAP EVENTS
-================================ */
-function registerMapEvents() {
-  map.on("mousemove", "buildings", e => {
-    map.getCanvas().style.cursor = "pointer";
+/* UI EVENTS */
+document.getElementById("filterDebt").onchange = e => {
+  filters.debt = e.target.checked;
+  applyFilters();
+};
+document.getElementById("filterNoDebt").onchange = e => {
+  filters.noDebt = e.target.checked;
+  applyFilters();
+};
+document.getElementById("ownershipFilter").onchange = e => {
+  filters.ownership = e.target.value;
+  applyFilters();
+};
 
+/* ANALYTICS */
+function updateStats() {
+  const list = geoData.features.filter(f => {
+    const tax = f.properties.tax_amount;
+    if (!filters.debt && tax > 0) return false;
+    if (!filters.noDebt && tax === 0) return false;
+    if (filters.ownership !== "all" && f.properties.ownership !== filters.ownership) return false;
+    return true;
+  });
+
+  const debtors = list.filter(f => f.properties.tax_amount > 0);
+  const sum = debtors.reduce((s, f) => s + Number(f.properties.tax_amount), 0);
+
+  document.getElementById("stat-total").innerText = list.length;
+  document.getElementById("stat-debtors").innerText = debtors.length;
+  document.getElementById("stat-sum").innerText = sum + " грн";
+}
+
+/* MAP HOVER */
+function bindMapEvents() {
+  map.on("mousemove", "buildings", e => {
     const p = e.features[0].properties;
 
     document.getElementById("info-panel").innerHTML = `
-      <h3>Будівля: ${p.building_id}</h3>
+      <h3>${p.building_id}</h3>
       <div>Тип: ${p.build_type || "—"}</div>
       <div>Власність: ${p.ownership}</div>
       <div>Податок: ${p.tax_amount} грн</div>
@@ -93,102 +125,7 @@ function registerMapEvents() {
   });
 
   map.on("mouseleave", "buildings", () => {
-    map.getCanvas().style.cursor = "";
     document.getElementById("info-panel").innerHTML =
       "<p>Наведіть курсор на будівлю</p>";
   });
 }
-
-/* ==============================
-   FILTERS
-================================ */
-function applyFilters() {
-  let filter = ["all"];
-
-  // debt filters
-  if (currentFilters.debt && !currentFilters.noDebt) {
-    filter.push([">", ["get", "tax_amount"], 0]);
-  }
-
-  if (!currentFilters.debt && currentFilters.noDebt) {
-    filter.push(["==", ["get", "tax_amount"], 0]);
-  }
-
-  // ownership
-  if (currentFilters.ownership !== "all") {
-    filter.push([
-      "==",
-      ["get", "ownership"],
-      currentFilters.ownership
-    ]);
-  }
-
-  map.setFilter("buildings", filter);
-  updateStatsFiltered();
-}
-
-/* ==============================
-   FILTER UI
-================================ */
-document.getElementById("filterDebt").onchange = e => {
-  currentFilters.debt = e.target.checked;
-  applyFilters();
-};
-
-document.getElementById("filterNoDebt").onchange = e => {
-  currentFilters.noDebt = e.target.checked;
-  applyFilters();
-};
-
-document.getElementById("ownershipFilter").onchange = e => {
-  currentFilters.ownership = e.target.value;
-  applyFilters();
-};
-
-/* ==============================
-   ANALYTICS
-================================ */
-function updateStatsFiltered() {
-  if (!geoData) return;
-
-  const features = geoData.features.filter(f => {
-    const tax = Number(f.properties.tax_amount);
-    const own = f.properties.ownership;
-
-    if (!currentFilters.debt && tax > 0) return false;
-    if (!currentFilters.noDebt && tax === 0) return false;
-    if (currentFilters.ownership !== "all" && own !== currentFilters.ownership)
-      return false;
-
-    return true;
-  });
-
-  const debtors = features.filter(f => f.properties.tax_amount > 0);
-  const sumDebt = debtors.reduce(
-    (sum, f) => sum + Number(f.properties.tax_amount),
-    0
-  );
-
-  document.getElementById("stat-total").innerText = features.length;
-  document.getElementById("stat-debtors").innerText = debtors.length;
-  document.getElementById("stat-sum").innerText = sumDebt + " грн";
-}
-
-/* ==============================
-   SEARCH
-================================ */
-document.getElementById("searchInput").oninput = e => {
-  const q = e.target.value.toLowerCase();
-
-  if (!q) {
-    map.setFilter("buildings", null);
-    applyFilters();
-    return;
-  }
-
-  map.setFilter("buildings", [
-    "in",
-    ["downcase", ["get", "building_id"]],
-    q
-  ]);
-};
