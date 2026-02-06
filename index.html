@@ -2,8 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <title>Sheptytska GIS — Admin</title>
-
+  <title>Sheptytska GIS — Податки</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Mapbox -->
@@ -11,112 +10,70 @@
     href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
     rel="stylesheet"
   />
-
-  <!-- Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<!-- TOP BAR -->
-<header class="topbar">
-  <div class="search">
-    <i class="fa fa-search"></i>
-    <input type="text" placeholder="Пошук: bld_01234 / адреса" />
+<!-- TOP SEARCH -->
+<div class="topbar">
+  <input id="searchInput" placeholder="Пошук: bld_01234 / адреса" />
+</div>
+
+<!-- LEFT SIDEBAR -->
+<div class="sidebar">
+
+  <div class="logo-wrapper">
+    <div class="logo">
+      <img src="logo.svg" alt="Герб">
+    </div>
   </div>
-</header>
 
-<!-- MAIN LAYOUT -->
-<div class="app">
+  <h2>Адміністратор</h2>
+  <small>Податки та майно</small>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <div class="panel">
+    <h3>Шари</h3>
+    <label><input type="checkbox" id="layerBuildings" checked> Будівлі</label>
+    <label><input type="checkbox" id="layerDebtors" checked> Боржники</label>
+    <label><input type="checkbox" id="layerNoDebt" checked> Без боргу</label>
+  </div>
 
-    <div class="profile">
-      <img src="data/logo-bw.svg" />
-      <div>
-        <strong>ШЕПТИЦЬКА </strong>
-        <span>територіальна громада</span>
-      </div>
+  <div class="panel">
+    <h3>Податки</h3>
+    <label><input type="checkbox" id="filterDebt" checked> З боргом</label>
+    <label><input type="checkbox" id="filterNoDebt" checked> Без боргу</label>
+
+    <select id="ownershipFilter">
+      <option value="all">Всі форми власності</option>
+      <option value="communal">Комунальна</option>
+      <option value="private">Приватна</option>
+    </select>
+
+    <button id="debtMode">⚠ Режим боржників</button>
+  </div>
+
+  <div class="panel">
+    <h3>Аналітика</h3>
+    <div class="stats">
+      <div> Будівель <b id="stat-total">–</b></div>
+      <div> Боржників <b id="stat-debtors">–</b></div>
+      <div> Сума боргу <b id="stat-sum">–</b></div>
     </div>
-
-    
-<!-- ФІЛЬТРИ -->
-<section class="panel">
-  <h3>Податки</h3>
-  <label>
-    <input type="checkbox" id="withDebt" checked>
-    З боргом
-  </label>
-  <label>
-    <input type="checkbox" id="withoutDebt" checked>
-    Без боргу
-  </label>
-
-  <h3>Форма власності</h3>
-  <select id="ownership">
-    <option value="all">Всі</option>
-    <option value="communal">Комунальна</option>
-    <option value="private">Приватна</option>
-  </select>
-
-  <button id="debtMode">⚠️ Режим боржників</button>
-</section>
-
-<!-- АНАЛІТИКА -->
-<section class="panel">
-  <h3>Аналітика</h3>
-  <div>🏢 Будівель: <b id="stat-total">0</b></div>
-  <div>💰 Боржників: <b id="stat-debtors">0</b></div>
-  <div>📉 Сума боргу: <b id="stat-sum">0 грн</b></div>
-</section>
-
-    <nav class="menu">
-      <div class="menu-section">Адміністрування</div>
-
-      <a class="menu-item active"><i class="fa fa-chart-pie"></i> Dashboard</a>
-      <a class="menu-item"><i class="fa fa-building"></i> Будівлі</a>
-      <a class="menu-item"><i class="fa fa-wallet"></i> Податки</a>
-      <a class="menu-item"><i class="fa fa-bell"></i> Боржники</a>
-
-      <div class="menu-section">Аналітика</div>
-
-      <a class="menu-item"><i class="fa fa-chart-line"></i> Звіти</a>
-      <a class="menu-item"><i class="fa fa-layer-group"></i> Фільтри</a>
-
-      <div class="menu-section">Автоматизації</div>
-
-      <label class="toggle">
-        <input type="checkbox" checked />
-        <span>Нарахування щомісяця</span>
-      </label>
-
-      <label class="toggle">
-        <input type="checkbox" />
-        <span>Повідомлення боржникам</span>
-      </label>
-    </nav>
-  </aside>
-
-  <!-- MAP -->
-  <main id="map"></main>
-
-  <!-- INFO PANEL -->
-  <aside class="info-panel">
-    <h3>Інформація</h3>
-    <div id="info-content">
-      Наведіть курсор на будівлю
-    </div>
-  </aside>
+  </div>
 
 </div>
 
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- RIGHT INFO -->
+<div id="info-panel">
+  <h3>Інформація</h3>
+  <div id="info-content">Наведіть курсор на будівлю</div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
