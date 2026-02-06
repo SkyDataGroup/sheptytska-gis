@@ -1,21 +1,80 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="utf-8" />
-  <title>Погосподарський облік в режимі адміністрування податку на нерухомість</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <title>Municipal Tax GIS (demo)</title>
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mapbox -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
 
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { width: 100vw; height: 100vh; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
-<div id="map"></div>
+<!-- LEFT ADMIN PANEL -->
+<aside id="sidebar">
+  <h2>🏛 Адміністрування</h2>
+
+  <section>
+    <h3>Податки</h3>
+    <label><input type="checkbox" id="filter-debt" /> З боргом</label>
+    <label><input type="checkbox" id="filter-no-debt" checked /> Без боргу</label>
+  </section>
+
+  <section>
+    <h3>Форма власності</h3>
+    <select id="filter-ownership">
+      <option value="all">Всі</option>
+      <option value="communal">Комунальна</option>
+      <option value="private">Приватна</option>
+      <option value="state">Державна</option>
+    </select>
+  </section>
+
+  <section>
+    <h3>Завдання</h3>
+    <ul class="tasks">
+      <li>🔔 Перевірка боржників</li>
+      <li>📄 Підготовка повідомлень</li>
+      <li>📊 Звіт по району</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Автоматизації</h3>
+    <label><input type="checkbox" checked /> Нарахування щомісяця</label>
+    <label><input type="checkbox" /> Повідомлення боржникам</label>
+  </section>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <input
+      type="search"
+      id="search"
+      placeholder="🔍 Пошук: bld_01234 / комунальна / борг"
+    />
+  </header>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- RIGHT INFO PANEL -->
+  <aside id="info-panel">
+    <h3>Інформація</h3>
+    <div id="info-content">
+      <em>Наведіть курсор на будівлю</em>
+    </div>
+  </aside>
+
+</div>
 
 <script src="app.js"></script>
 </body>
