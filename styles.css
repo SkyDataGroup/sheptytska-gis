@@ -102,6 +102,29 @@ body {
   font-size: 14px;
 }
 
+/* FILTERS */
+.filter-block {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.filter-block label {
+  display: block;
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+
+.filter-block select {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  outline: none;
+}
+
+
 /* MAP */
 #map {
   width: 100%;
