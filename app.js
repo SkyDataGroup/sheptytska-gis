@@ -14,7 +14,7 @@ const map = new mapboxgl.Map({
 
 map.on('load', async () => {
 
-  const res = await fetch('data/buildings_demo.geojson');
+  const res = await fetch('data/buildings_demo2.geojson');
   const geojson = await res.json();
 
   map.addSource('buildings', {
