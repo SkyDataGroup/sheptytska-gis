@@ -16,7 +16,7 @@ map.on('load', () => {
   // ===== LOAD BUILDINGS =====
   map.addSource('buildings', {
     type: 'geojson',
-    data: './data/buildings_demo.geojson'
+    data: './data/buildings_demo1.geojson'
   });
 
   // ===== BUILDINGS FILL =====
