@@ -1,153 +1,50 @@
-* {
-  box-sizing: border-box;
-  font-family: Inter, system-ui, sans-serif;
-}
-
-body {
-  margin: 0;
-  background: #0b0d12;
-  color: #e5e7eb;
-  overflow: hidden;
+/* ==== GLASS UI BASE ==== */
+.sidebar,
+#info-panel,
+.topbar {
+  background: rgba(12, 14, 20, 0.65);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255,255,255,0.06);
 }
 
 /* TOP BAR */
 .topbar {
-  position: fixed;
-  top: 0;
-  left: 260px;
-  right: 260px;
-  height: 52px;
-  background: rgba(15,17,24,0.9);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  z-index: 10;
-}
-
-.topbar input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
-  background: #1a1d24;
-  color: #fff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 
 /* SIDEBAR */
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 260px;
-  padding: 16px;
-  background: linear-gradient(180deg,#0f1118,#090b10);
-  overflow-y: auto;
-}
-
-/* LOGO */
-.logo-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-}
-
-.logo {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle at top,#2a2d33,#0e0f12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,.6);
-}
-
-.logo img {
-  width: 80%;
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.04);
 }
 
 /* PANELS */
 .panel {
-  background: rgba(255,255,255,0.03);
-  border-radius: 14px;
-  padding: 14px;
-  margin-top: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.panel h3 {
-  font-size: 12px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: #9aa4b2;
+/* BUTTONS */
+.panel button {
+  background: linear-gradient(135deg,#ef4444,#b91c1c);
+  box-shadow: 0 6px 20px rgba(239,68,68,0.35);
 }
 
-.panel label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0;
-  cursor: pointer;
-}
-
+/* CHECKBOX */
 .panel input[type="checkbox"] {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #1c1f26;
-  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
 }
-
 .panel input[type="checkbox"]:checked {
-  background: linear-gradient(135deg,#4da3ff,#2563eb);
-}
-
-.panel select,
-.panel button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #12141a;
-  color: #fff;
-}
-
-.panel button {
-  background: linear-gradient(135deg,#dc2626,#991b1b);
-}
-
-/* MAP */
-#map {
-  position: fixed;
-  top: 52px;
-  left: 260px;
-  right: 260px;
-  bottom: 0;
+  background: linear-gradient(135deg,#60a5fa,#2563eb);
 }
 
 /* INFO PANEL */
 #info-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 260px;
-  bottom: 0;
-  background: rgba(10,12,18,.75);
-  backdrop-filter: blur(14px);
-  padding: 16px;
-}
-
-#info-content {
-  margin-top: 10px;
-  font-size: 14px;
+  box-shadow: inset 1px 0 0 rgba(255,255,255,0.04);
 }
 
 /* SCROLLBAR */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2f3a;
-  border-radius: 10px;
+.sidebar::-webkit-scrollbar-thumb,
+#info-panel::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
 }
