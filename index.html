@@ -40,10 +40,41 @@
     <div class="profile">
       <img src="https://i.pravatar.cc/60" />
       <div>
-        <strong>Адміністратор</strong>
-        <span>Податки та майно</span>
+        <strong>ШЕПТИЦЬКА </strong>
+        <span>територіальна громада</span>
       </div>
     </div>
+
+    
+<!-- ФІЛЬТРИ -->
+<section class="panel">
+  <h3>Податки</h3>
+  <label>
+    <input type="checkbox" id="withDebt" checked>
+    З боргом
+  </label>
+  <label>
+    <input type="checkbox" id="withoutDebt" checked>
+    Без боргу
+  </label>
+
+  <h3>Форма власності</h3>
+  <select id="ownership">
+    <option value="all">Всі</option>
+    <option value="communal">Комунальна</option>
+    <option value="private">Приватна</option>
+  </select>
+
+  <button id="debtMode">⚠️ Режим боржників</button>
+</section>
+
+<!-- АНАЛІТИКА -->
+<section class="panel">
+  <h3>Аналітика</h3>
+  <div>🏢 Будівель: <b id="stat-total">0</b></div>
+  <div>💰 Боржників: <b id="stat-debtors">0</b></div>
+  <div>📉 Сума боргу: <b id="stat-sum">0 грн</b></div>
+</section>
 
     <nav class="menu">
       <div class="menu-section">Адміністрування</div>
