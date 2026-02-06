@@ -1,74 +1,84 @@
 mapboxgl.accessToken =
-  'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
+ 'pk.eyJ1IjoidGFyYXN0eXJrbyIsImEiOiJjbWw4a3JtM3EwMWNvM2RzanBkdG01aTR6In0.IvAorFVXsdHbuaG7PRuaCA';
 
-let map;
-let geoData;
+let map, geoData;
+
+const filters = {
+  debt: true,
+  noDebt: true,
+  ownership: 'all'
+};
 
 map = new mapboxgl.Map({
-  container: "map",
-  style: "mapbox://styles/mapbox/satellite-streets-v12",
-  center: [24.23, 50.39],
+  container: 'map',
+  style: 'mapbox://styles/mapbox/satellite-streets-v12',
+  center: [24.23,50.39],
   zoom: 13
 });
 
-map.on("load", async () => {
-  const res = await fetch("./data/buildings_demo2.geojson");
-  geoData = await res.json();
+map.on('load', async () => {
+  geoData = await (await fetch('./data/buildings_demo2.geojson')).json();
 
-  map.addSource("buildings", {
-    type: "geojson",
-    data: geoData
-  });
+  map.addSource('buildings',{ type:'geojson', data:geoData });
 
   map.addLayer({
-    id: "buildings",
-    type: "fill",
-    source: "buildings",
-    paint: {
-      "fill-color": [
-        "case",
-        [">", ["get", "tax_amount"], 0],
-        "#ef4444",
-        "#22d3ee"
-      ],
-      "fill-opacity": 0.55
+    id:'buildings', type:'fill', source:'buildings',
+    paint:{
+      'fill-color': ['case',['>', ['get','tax_amount'],0],'#ef4444','#22d3ee'],
+      'fill-opacity':0.55
     }
   });
 
   map.addLayer({
-    id: "outline",
-    type: "line",
-    source: "buildings",
-    paint: {
-      "line-color": "rgba(255,255,255,0.3)",
-      "line-width": 0.5
-    }
+    id:'outline', type:'line', source:'buildings',
+    paint:{ 'line-color':'rgba(255,255,255,.3)','line-width':0.5 }
   });
 
-  bindEvents();
+  applyFilters();
+  bindUI();
 });
 
-function bindEvents() {
-  map.on("mousemove", "buildings", e => {
-    const p = e.features[0].properties;
+function applyFilters() {
+  const f = ['all'];
 
-    document.getElementById("info-panel").innerHTML = `
-      <h3>Будівля ${p.building_id}</h3>
-      <div class="row"><span class="label">Тип:</span> ${p.build_type || "—"}</div>
-      <div class="row"><span class="label">Власність:</span> ${p.ownership}</div>
-      <div class="row"><span class="label">Нарахування:</span> ${p.tax_amount} грн</div>
-      <div class="row"><span class="label">Борг:</span> ${p.tax_amount > 0 ? p.tax_amount + " грн" : "немає"}</div>
+  if (filters.debt && !filters.noDebt)
+    f.push(['>', ['get','tax_amount'],0]);
 
-      <hr style="opacity:.1;margin:12px 0">
+  if (!filters.debt && filters.noDebt)
+    f.push(['==', ['get','tax_amount'],0]);
 
-      <div class="row"><i class="ri-phone-line"></i> Зателефонувати</div>
-      <div class="row"><i class="ri-send-plane-line"></i> PUSH у Приват24</div>
-      <div class="row"><i class="ri-message-2-line"></i> Надіслати SMS</div>
-    `;
+  if (filters.ownership !== 'all')
+    f.push(['==',['get','ownership'],filters.ownership]);
+
+  map.setFilter('buildings', f);
+}
+
+function bindUI() {
+  document.getElementById('filterDebt').onchange = e => {
+    filters.debt = e.target.checked; applyFilters();
+  };
+  document.getElementById('filterNoDebt').onchange = e => {
+    filters.noDebt = e.target.checked; applyFilters();
+  };
+  document.getElementById('ownershipFilter').onchange = e => {
+    filters.ownership = e.target.value; applyFilters();
+  };
+
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab,.tab-content')
+        .forEach(e=>e.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+    };
   });
 
-  map.on("mouseleave", "buildings", () => {
-    document.getElementById("info-panel").innerHTML =
-      `<h3>Обʼєкт не вибрано</h3><p class="muted">Наведіть курсор на будівлю</p>`;
+  map.on('mousemove','buildings',e=>{
+    const p=e.features[0].properties;
+    document.getElementById('tab-data').innerHTML = `
+      ${Object.entries(p).map(([k,v]) =>
+        `<div class="row"><span class="label">${k}:</span> ${v ?? '—'}</div>`
+      ).join('')}
+    `;
   });
 }
